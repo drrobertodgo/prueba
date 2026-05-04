@@ -73,9 +73,16 @@ export default function App() {
 
     const apiKey = "AIzaSyDkP5YHhMkLTYH1O9fW44rHe8309CTCQlM";
     
-    // Lista de modelos a probar en orden de estabilidad
-    const modelOptions = ["gemini-1.5-flash", "gemini-pro"];
+    // Probamos todos los nombres posibles de modelos para asegurar compatibilidad
+    const modelOptions = [
+      "gemini-1.5-flash", 
+      "gemini-1.5-flash-latest", 
+      "gemini-1.5-pro", 
+      "gemini-pro"
+    ];
+    
     let success = false;
+    let errorDetails = "";
 
     for (const modelName of modelOptions) {
       if (success) break;
@@ -84,33 +91,40 @@ export default function App() {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
         const freshness = `${Date.now()}-${Math.random()}`;
         
-        const promptText = `Eres experto USICAMM. Genera UN reactivo JSON de opción múltiple (A, B, C) sobre un CASO PRÁCTICO.
+        const promptText = `Eres experto USICAMM. Genera UN reactivo de opción múltiple (A, B, C) sobre un CASO PRÁCTICO.
         NIVEL: ${activeLevel}. ÁREA: ${activeArea.title}. BIBLIOGRAFÍA: ${CORE_KNOWLEDGE}. SEED: ${freshness}.
-        RESPONDE SOLO JSON: {"type":"Cuestionamiento","base":"...","options":[{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."}],"correct":"A","argumentation":"...","aiTip":"..."}`;
+        RESPONDE ESTRICTAMENTE EN JSON: {"type":"Cuestionamiento","base":"...","options":[{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."}],"correct":"A","argumentation":"...","aiTip":"..."}`;
 
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            contents: [{ parts: [{ text: promptText }] }],
-            generationConfig: { responseMimeType: "application/json" }
+            contents: [{ parts: [{ text: promptText }] }]
           })
         });
 
-        if (!response.ok) throw new Error(`Model ${modelName} falló`);
+        if (!response.ok) {
+          const errData = await response.json();
+          errorDetails = `Error ${response.status}: ${errData.error?.message || 'No autorizado'}`;
+          continue; // Probar siguiente modelo
+        }
 
         const data = await response.json();
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        setCurrentQuestion(JSON.parse(rawText.replace(/```json|```/g, '').trim()));
+        
+        // Limpiamos la respuesta por si la IA agrega bloques de código
+        const cleanJson = rawText.replace(/```json|```/g, '').trim();
+        setCurrentQuestion(JSON.parse(cleanJson));
         success = true;
         setIsLoading(false);
-      } catch (err) {
-        console.warn(`Intento con ${modelName} falló, probando siguiente...`, err);
+      } catch (err: any) {
+        errorDetails = err.message;
+        console.warn(`Intento con ${modelName} falló:`, err);
       }
     }
 
     if (!success) {
-      setApiError(`Error de sincronización con Google. Por favor, asegúrate de que tu API Key tenga permisos para Gemini 1.5 Flash.`);
+      setApiError(`Fallo de Conexión: ${errorDetails}. Por favor, verifica que tu API Key sea válida en Google AI Studio.`);
       setIsLoading(false);
     }
   };
@@ -144,10 +158,10 @@ export default function App() {
 
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
           <section>
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Tu Perfil</h2>
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Perfil de Usuario</h2>
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(l => (
-                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'hover:bg-slate-800 text-slate-400'}`}>
+                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
                    {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {l}
                 </button>
               ))}
@@ -166,7 +180,6 @@ export default function App() {
             </div>
           </section>
 
-          {/* GANCHO DE MONETIZACIÓN */}
           <section className="px-4">
              <div className="bg-gradient-to-br from-amber-400/10 to-amber-600/10 border border-amber-500/20 rounded-2xl p-4">
                 <p className="text-[10px] font-black text-amber-600 uppercase mb-2 flex items-center gap-1"><CreditCard size={12}/> Plan Premium</p>
@@ -233,7 +246,7 @@ export default function App() {
           {apiError && (
             <div className="bg-white rounded-[2.5rem] p-10 lg:p-16 text-center border-2 border-red-100 shadow-xl animate-in zoom-in-95 duration-500">
                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><AlertCircle size={48} /></div>
-               <h3 className="text-2xl font-black text-red-900 mb-4 tracking-tight leading-tight uppercase">Conexión Interrumpida</h3>
+               <h3 className="text-2xl font-black text-red-900 mb-4 tracking-tight leading-tight uppercase tracking-tighter">Conexión Interrumpida</h3>
                <p className="text-red-700 text-lg mb-10 max-w-md mx-auto">{String(apiError)}</p>
                <button onClick={fetchNewQuestion} className="bg-red-600 text-white px-10 py-4 rounded-[1.5rem] font-black text-lg hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-3 mx-auto shadow-red-200">
                  <RefreshCw size={24} /> Reintentar Ahora
@@ -245,8 +258,8 @@ export default function App() {
             <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-700 pb-20">
               <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
                 <div className="p-8 lg:p-12 bg-slate-50/50 border-b border-slate-100 relative">
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">{String(currentQuestion.type)}</span>
+                  <div className="flex justify-between items-center mb-6 text-balance">
+                    <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-emerald-500/20">{String(currentQuestion.type)}</span>
                     <Award className="text-amber-500" size={24} />
                   </div>
                   <h3 className="text-2xl lg:text-3xl font-medium leading-snug text-slate-800 whitespace-pre-line text-balance">{String(currentQuestion.base)}</h3>
@@ -285,7 +298,7 @@ export default function App() {
                     </div>
                     <div>
                       <h4 className={`text-2xl font-black mb-3 ${selectedOption === currentQuestion.correct ? 'text-emerald-800' : 'text-red-800'}`}>
-                        {selectedOption === currentQuestion.correct ? '¡Sustento Correcto!' : 'Respuesta Incorrecta'}
+                        {selectedOption === currentQuestion.correct ? '¡Sustento Correcto!' : 'Decisión Incorrecta'}
                       </h4>
                       <p className="text-slate-700 text-lg leading-relaxed">{String(currentQuestion.argumentation)}</p>
                     </div>
