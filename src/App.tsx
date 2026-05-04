@@ -76,7 +76,6 @@ export default function App() {
     // Lista de modelos a probar en orden de estabilidad
     const modelOptions = ["gemini-1.5-flash", "gemini-pro"];
     let success = false;
-    let lastError = "";
 
     for (const modelName of modelOptions) {
       if (success) break;
@@ -105,9 +104,8 @@ export default function App() {
         setCurrentQuestion(JSON.parse(rawText.replace(/```json|```/g, '').trim()));
         success = true;
         setIsLoading(false);
-      } catch (err: any) {
-        lastError = err.message;
-        console.warn(`Intento con ${modelName} falló, probando siguiente...`);
+      } catch (err) {
+        console.warn(`Intento con ${modelName} falló, probando siguiente...`, err);
       }
     }
 
@@ -149,7 +147,7 @@ export default function App() {
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Tu Perfil</h2>
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(l => (
-                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
+                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'hover:bg-slate-800 text-slate-400'}`}>
                    {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {l}
                 </button>
               ))}
