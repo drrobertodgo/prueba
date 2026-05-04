@@ -22,7 +22,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-// --- CONFIGURACIÓN ---
+// --- CONFIGURACIÓN DE ÁREAS Y NIVELES ---
 const USICAMM_AREAS = [
   { id: 'area1', title: 'Área 1. Aspectos normativos', icon: <BookMarked size={20} />, color: 'text-blue-500' },
   { id: 'area2', title: 'Área 2. Gestión escolar / educativa', icon: <Target size={20} />, color: 'text-emerald-500' },
@@ -31,7 +31,7 @@ const USICAMM_AREAS = [
 
 const EDUCATIONAL_LEVELS = ['Preescolar', 'Primaria', 'Secundaria', 'Supervisión'];
 
-// BIBLIOGRAFÍA COMPACTA
+// RESUMEN TÉCNICO DE LA BIBLIOGRAFÍA (Sincronizado con tus documentos)
 const CORE_KNOWLEDGE = `
 - MARCO LEGAL: Art. 3º (Inclusión, Excelencia), LGE (NEM), LGDNNA (Interés Superior).
 - ACUERDOS: 05/04/24 (CTE), 14/12/23 (Acoso), 17/05/25 (Violencia Sexual), 30/09/24 (Salud).
@@ -71,27 +71,32 @@ export default function App() {
     setCurrentQuestion(null);
     setIsSidebarOpen(false);
 
-    // LLAVE Y MODELO
+    // LLAVE Y RUTA ESTABLE (v1 en lugar de v1beta)
     const apiKey = "AIzaSyDkP5YHhMkLTYH1O9fW44rHe8309CTCQlM"; 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
-    const randomSeed = Math.floor(Math.random() * 1000000);
+    const freshnessToken = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    const promptText = `Actúa como evaluador experto de USICAMM. 
-    Genera un reactivo de opción múltiple (A, B, C) sobre un CASO PRÁCTICO inédito.
-    PERFIL: ${activeLevel}
-    ÁREA: ${activeArea.title}
+    const promptText = `Eres el evaluador líder de USICAMM México. 
+    TAREA: Generar UN reactivo de opción múltiple (A, B, C) sobre un CASO PRÁCTICO.
+    NIVEL: "${activeLevel}"
+    ÁREA TEMÁTICA: "${activeArea.title}"
     BIBLIOGRAFÍA: ${CORE_KNOWLEDGE}
-    ID: ${randomSeed}
+    ID SESIÓN: ${freshnessToken}
     
-    RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO:
+    INSTRUCCIONES:
+    1. El caso debe ser un dilema técnico o ético realista.
+    2. La respuesta correcta debe fundamentarse en la bibliografía citada.
+    3. RESPONDE EXCLUSIVAMENTE CON UN JSON VÁLIDO.
+    
+    JSON ESTRUCTURA:
     {
       "type": "Cuestionamiento Directo",
       "base": "Planteamiento del caso...",
       "options": [{"id": "A", "text": "..."}, {"id": "B", "text": "..."}, {"id": "C", "text": "..."}],
       "correct": "A",
-      "argumentation": "Explicación legal detallada...",
-      "aiTip": "Hack de examen..."
+      "argumentation": "Explicación legal...",
+      "aiTip": "Tip estratégico..."
     }`;
 
     try {
@@ -99,28 +104,25 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          contents: [{ parts: [{ text: promptText }] }],
-          generationConfig: { 
-            responseMimeType: "application/json",
-            temperature: 0.9 
-          }
+          contents: [{ parts: [{ text: promptText }] }]
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+        const errData = await response.json();
+        throw new Error(errData.error?.message || `Error ${response.status}`);
       }
 
       const data = await response.json();
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const cleanJson = rawText.replace(/```json|```/g, '').trim();
       
+      // Limpieza de formato para evitar errores de parseo
+      const cleanJson = rawText.replace(/```json|```/g, '').trim();
       setCurrentQuestion(JSON.parse(cleanJson));
       setIsLoading(false);
     } catch (err: any) {
       console.error(err);
-      setApiError(`Detalle técnico: ${err.message}. Verifica que tu API Key esté activa y el internet sea estable.`);
+      setApiError(`Ajuste de Motor: ${err.message}. Reintenta ahora para refrescar la conexión.`);
       setIsLoading(false);
     }
   };
@@ -139,6 +141,7 @@ export default function App() {
       
       {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
       
+      {/* SIDEBAR */}
       <aside className={`fixed inset-y-0 left-0 w-80 bg-[#0f172a] text-slate-300 flex flex-col z-50 transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-8 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -156,7 +159,7 @@ export default function App() {
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Rol de Evaluación</h2>
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(l => (
-                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'hover:bg-slate-800 text-slate-400'}`}>
+                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
                    {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {l}
                 </button>
               ))}
@@ -178,7 +181,7 @@ export default function App() {
 
         <div className="p-6 bg-slate-900 border-t border-slate-800">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 border border-slate-700 mb-4 text-center">
-             <p className="text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Rendimiento</p>
+             <p className="text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest leading-none">Rendimiento Actual</p>
              <span className="text-3xl font-black text-white">{accuracy}%</span>
           </div>
           <a href="https://wa.me/526181518337" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-2xl font-black text-xs hover:bg-[#128C7E] transition-all">
@@ -192,8 +195,8 @@ export default function App() {
         <header className="bg-white border-b p-4 flex items-center justify-between lg:hidden sticky top-0 z-30 shadow-sm">
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 bg-slate-100 rounded-xl text-slate-600"><Menu size={24} /></button>
           <div className="flex flex-col items-center text-center">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">USICAMM AI</span>
-            <span className="text-xs font-bold text-emerald-600 mt-1">{activeLevel}</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">USICAMM AI</span>
+            <span className="text-xs font-bold text-emerald-600 leading-none mt-1">{activeLevel}</span>
           </div>
           <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xs font-black text-emerald-600">{stats.correct}/{stats.total}</div>
         </header>
@@ -203,7 +206,7 @@ export default function App() {
           <div className="hidden lg:flex items-center justify-between mb-12">
             <div className="flex items-center gap-4">
               <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100"><ShieldCheck className="text-emerald-500" /></div>
-              <div><h2 className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none">Simulador Inteligente</h2><p className="text-xl font-bold text-slate-800 mt-1">{activeLevel} • {activeArea.title}</p></div>
+              <div><h2 className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none">Entrenamiento Premium</h2><p className="text-xl font-bold text-slate-800 mt-1">{activeLevel} • {activeArea.title}</p></div>
             </div>
             <div className="bg-emerald-500/10 text-emerald-600 px-4 py-2 rounded-full text-[10px] font-black flex items-center gap-2 border border-emerald-500/20">
                <FileCheck size={14} /> BIBLIOGRAFÍA SINCRONIZADA
@@ -214,7 +217,7 @@ export default function App() {
             <div className="bg-white rounded-[2.5rem] p-10 lg:p-20 text-center shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-700">
               <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-slate-100 transform -rotate-3"><BrainCircuit size={48} className="text-emerald-500" /></div>
               <h3 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6 tracking-tight leading-none text-balance">Generación Ilimitada</h3>
-              <p className="text-slate-500 text-lg lg:text-xl mb-12 max-w-xl mx-auto leading-relaxed text-balance">Cada reactivo se genera en tiempo real basándose estrictamente en la bibliografía oficial 2026.</p>
+              <p className="text-slate-500 text-lg lg:text-xl mb-12 max-w-xl mx-auto leading-relaxed text-balance">Nuestra IA diseña casos prácticos únicos basándose en los 40 documentos oficiales para asegurar tu plaza docente.</p>
               <button onClick={fetchNewQuestion} className="w-full lg:w-auto bg-[#0f172a] text-white px-12 py-5 rounded-[2.5rem] font-black text-xl hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-4 mx-auto">
                 <Sparkles size={24} /> Generar Reactivo de Área <ChevronRight size={24} />
               </button>
@@ -225,17 +228,17 @@ export default function App() {
             <div className="py-20 text-center animate-in fade-in">
               <div className="relative w-24 h-24 mx-auto mb-10 text-emerald-500 animate-spin"><RefreshCw size={96} /></div>
               <h4 className="text-3xl font-black text-slate-800 tracking-tighter">Gemini está pensando...</h4>
-              <p className="text-slate-400 mt-2 font-medium italic">Cruzando Leyes y Acuerdos SEP 2026</p>
+              <p className="text-slate-400 mt-2 font-medium italic">Consultando Leyes y Acuerdos SEP 2026</p>
             </div>
           )}
 
           {apiError && (
             <div className="bg-white rounded-[2.5rem] p-10 lg:p-16 text-center border-2 border-red-100 shadow-xl animate-in zoom-in-95 duration-500">
                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><AlertCircle size={48} /></div>
-               <h3 className="text-2xl font-black text-red-900 mb-4 tracking-tight leading-tight uppercase">Error de Motor</h3>
+               <h3 className="text-2xl font-black text-red-900 mb-4 tracking-tight leading-tight uppercase tracking-tighter">Conexión Interrumpida</h3>
                <p className="text-red-700 text-lg mb-10 max-w-md mx-auto">{String(apiError)}</p>
                <button onClick={fetchNewQuestion} className="bg-red-600 text-white px-10 py-4 rounded-[1.5rem] font-black text-lg hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-3 mx-auto">
-                 <RefreshCw size={24} /> Reintentar Conexión
+                 <RefreshCw size={24} /> Reintentar Ahora
                </button>
             </div>
           )}
@@ -244,7 +247,7 @@ export default function App() {
             <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-700 pb-20">
               <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
                 <div className="p-8 lg:p-12 bg-slate-50/50 border-b border-slate-100 relative">
-                  <div className="flex justify-between items-center mb-6">
+                  <div className="flex justify-between items-center mb-6 text-balance">
                     <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-emerald-500/20">{String(currentQuestion.type)}</span>
                     <Award className="text-amber-500" size={24} />
                   </div>
