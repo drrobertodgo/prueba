@@ -11,7 +11,6 @@ import {
   Award,
   BookMarked,
   GraduationCap,
-  FileText,
   ShieldCheck,
   Zap
 } from 'lucide-react';
@@ -29,21 +28,22 @@ const EDUCATIONAL_LEVELS = ['Preescolar', 'Primaria', 'Secundaria', 'Supervisió
 const GENERAL_KNOWLEDGE = `
 BIBLIOGRAFÍA BASE (Docs 1-36):
 - Marco Legal: Art. 3° (Inclusión, Excelencia), LGE (Nueva Escuela Mexicana), LGDNNA (Interés Superior de la Niñez).
-- Salud y Seguridad: Acuerdo 30/09/24 (Alimentación), Acuerdo 14/12/23 (Erradicación del Acoso), Acuerdo 17/05/25 (Violencia Sexual).
+- Salud y Seguridad: Acuerdo 30/09/24 (Alimentación), Acuerdo 14/12/23 (Erradicación del Acoso).
+- Acuerdo 17/05/25: Lineamientos para la prevención, detección y atención de Violencia Sexual. Prioridad en la protección de la víctima y no revictimización.
 - Gestión: Acuerdo 05/04/24 (Lineamientos CTE), PMC (Proceso de Mejora Continua), Programa Sintético y Analítico (Contextualización).
-- Autores Clave: Antonio Bolívar (Familia-Comunidad), José Weinstein (Liderazgo Pedagógico), Molina Ruiz (Comunidades de Aprendizaje).
+- Autores: Antonio Bolívar (Familia-Comunidad), José Weinstein (Liderazgo Pedagógico), Molina Ruiz (Comunidades de Aprendizaje).
 `;
 
 const SUPERVISION_ONLY_KNOWLEDGE = `
 BIBLIOGRAFÍA ESPECIALIZADA SUPERVISIÓN (Docs 37-40):
-- Transformación de la Supervisión (Margarita Zorrilla): De la vigilancia burocrática al apoyo técnico-pedagógico sistemático.
-- Asesorar es Acompañar (Montse Ventura): El asesoramiento como un proceso de construcción de saber profesional y cambio institucional.
-- Reflexión de la Praxis (David Vitte Viveros): Acompañamiento basado en la pedagogía crítica y el diálogo reflexivo.
-- Programa Analítico (Fascículos): El rol de la supervisión en el seguimiento del codiseño curricular.
+- Margarita Zorrilla: Transformar la supervisión escolar hacia un apoyo técnico-pedagógico sistemático, dejando atrás la vigilancia burocrática.
+- Montse Ventura: "Asesorar es acompañar". El asesoramiento como proceso de construcción de saber profesional entre pares.
+- David Vitte Viveros: Reflexión de la Praxis. Acompañamiento basado en pedagogía crítica y diálogo reflexivo.
+- Programa Analítico: Rol de la supervisión en el seguimiento técnico del codiseño curricular en la zona escolar.
 `;
 
 export default function App() {
-  const [activeLevel, setActiveLevel] = useState(EDUCATIONAL_LEVELS[1]); // Default Primaria
+  const [activeLevel, setActiveLevel] = useState(EDUCATIONAL_LEVELS[1]); 
   const [activeArea, setActiveArea] = useState(USICAMM_AREAS[0]);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,40 +59,53 @@ export default function App() {
     setErrorMsg('');
     setCurrentQuestion(null);
 
-    const apiKey = ""; // Injected at runtime
+    const apiKey = ""; 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
     
-    // Lógica de inyección de conocimiento dinámico
     const knowledgeToUse = level === 'Supervisión' 
       ? `${GENERAL_KNOWLEDGE}\n${SUPERVISION_ONLY_KNOWLEDGE}` 
       : GENERAL_KNOWLEDGE;
 
     const promptText = `Actúa como el experto líder en evaluación docente de USICAMM en México.
-    
-    TAREA: Generar UN reactivo de opción múltiple (3 opciones: A, B, C) INÉDITO y de alta complejidad para el proceso de Promoción 2026-2027.
-    
+    TAREA: Generar UN reactivo de opción múltiple (3 opciones: A, B, C) INÉDITO y de análisis de casos para el proceso 2026-2027.
     PARÁMETROS:
     - Función/Nivel: "${level}".
     - Área de Evaluación: "${areaTitle}".
-    
-    CONTEXTO DE LA BIBLIOGRAFÍA CARGADA:
+    CONTEXTO BIBLIOGRÁFICO:
     ${knowledgeToUse}
-    
-    REGLAS DE ORO PARA EL REACTIVO:
-    1. Si el nivel es "Supervisión", el caso debe tratar sobre un Supervisor asesorando a directores, gestionando zonas o aplicando los textos de Zorrilla y Ventura sobre acompañamiento.
-    2. Si es Preescolar/Primaria/Secundaria, el caso debe centrarse en un Directivo resolviendo conflictos en el plantel con docentes o padres.
-    3. La respuesta correcta debe ser indudable según los Acuerdos 2024-2025 o los autores citados.
-    4. Los distractores deben ser acciones que parezcan lógicas pero que sean administrativas, punitivas o violen el Interés Superior de la Niñez.
-    
-    ENTREGA EL RESULTADO EN ESTE FORMATO JSON:
-    {
-      "type": "Cuestionamiento directo o Relación de elementos",
-      "base": "El planteamiento detallado del caso práctico",
-      "options": [{"id": "A", "text": "..."}, {"id": "B", "text": "..."}, {"id": "C", "text": "..."}],
-      "correct": "A/B/C",
-      "argumentation": "Explicación técnica citando el documento específico de la base de conocimiento (ej. 'Basado en el Acuerdo 14/12/23...' o 'Como menciona Margarita Zorrilla...')",
-      "aiTip": "Un consejo de 1 frase para descartar distractores en este tema."
-    }`;
+    REGLAS:
+    1. Si es Supervisión, el caso trata sobre asesoría a directores o gestión de zona usando a Zorrilla/Ventura.
+    2. Si es Preescolar/Primaria/Secundaria, el caso es de un Directivo con su colectivo o comunidad.
+    3. La correcta debe basarse en los Acuerdos 2024-2025 o autores citados.
+    4. El formato de respuesta debe ser JSON estricto.`;
+
+    const payload = {
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            type: { type: "STRING" },
+            base: { type: "STRING" },
+            options: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  id: { type: "STRING" },
+                  text: { type: "STRING" }
+                }
+              }
+            },
+            correct: { type: "STRING" },
+            argumentation: { type: "STRING" },
+            aiTip: { type: "STRING" }
+          },
+          required: ["type", "base", "options", "correct", "argumentation", "aiTip"]
+        }
+      }
+    };
 
     let retries = 5;
     let delay = 1000;
@@ -102,7 +115,7 @@ export default function App() {
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+          body: JSON.stringify(payload)
         });
         
         if (!response.ok) throw new Error('API Error');
@@ -137,7 +150,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
       
-      {/* SIDEBAR - BENTO STYLE */}
       <aside className="w-80 bg-[#0f172a] text-slate-300 flex flex-col fixed h-full z-10 shadow-2xl">
         <div className="p-8 border-b border-slate-800">
           <div className="flex items-center gap-3">
@@ -152,7 +164,6 @@ export default function App() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
-          {/* NIVELES */}
           <div>
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4">Función a Evaluar</h2>
             <div className="grid grid-cols-1 gap-2">
@@ -171,7 +182,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* ÁREAS */}
           <div>
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4">Área Temática</h2>
             <div className="space-y-2">
@@ -192,7 +202,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* RENDIMIENTO */}
         <div className="p-6 bg-slate-900 border-t border-slate-800">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-5 border border-slate-700">
             <div className="flex justify-between items-center mb-4">
@@ -213,11 +222,9 @@ export default function App() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="ml-80 flex-1 min-h-screen bg-[#f8fafc] p-12">
         <div className="max-w-4xl mx-auto">
           
-          {/* HEADER INFO */}
           <div className="flex items-center justify-between mb-12">
             <div className="flex items-center gap-4">
               <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
@@ -230,7 +237,7 @@ export default function App() {
             </div>
             {activeLevel === 'Supervisión' && (
               <div className="bg-emerald-500/10 text-emerald-600 px-4 py-2 rounded-full text-xs font-black flex items-center gap-2 border border-emerald-500/20">
-                <Zap size={14} fill="currentColor"/> MÓDULO ZORRILLA/VENTURA ACTIVO
+                <Zap size={14} fill="currentColor"/> MÓDULO SUPERVISIÓN (40 DOCS)
               </div>
             )}
           </div>
@@ -242,7 +249,7 @@ export default function App() {
               </div>
               <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Motor de Generación Infinita</h3>
               <p className="text-slate-500 text-lg mb-10 max-w-md mx-auto leading-relaxed">
-                Nuestra IA procesará los 40 documentos oficiales para crear un caso único para ti.
+                Nuestra IA procesará la bibliografía oficial para crear un caso único según los Acuerdos 2024-2025.
               </p>
               <button 
                 onClick={() => fetchNewQuestion(activeArea.title, activeLevel)}
@@ -260,7 +267,7 @@ export default function App() {
                 <div className="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
               </div>
               <h4 className="text-xl font-bold text-slate-800 mb-2">Consultando bibliografía...</h4>
-              <p className="text-slate-400 font-medium">Cruzando Acuerdos 2024 con perfiles de {activeLevel}</p>
+              <p className="text-slate-400 font-medium">Cruzando Acuerdos SEP con perfiles de {activeLevel}</p>
             </div>
           )}
 
