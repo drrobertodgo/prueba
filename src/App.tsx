@@ -55,7 +55,6 @@ const USICAMM_AREAS = [
 
 const EDUCATIONAL_LEVELS = ['Preescolar', 'Primaria', 'Secundaria', 'Supervisión'];
 
-// --- BASE DE CONOCIMIENTO (Sincronizada con Bibliografía Oficial) ---
 const CORE_KNOWLEDGE = `
 1. Art. 3º Constitucional: Inclusión, Excelencia y Humanismo.
 2. Ley General de Educación: Marco de la Nueva Escuela Mexicana.
@@ -84,17 +83,28 @@ export default function App() {
   const [isEvaluated, setIsEvaluated] = useState(false);
   const [stats, setStats] = useState({ correct: 0, total: 0 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
 
   const activeArea = useMemo(() => 
     USICAMM_AREAS.find(a => a.id === activeAreaId) || USICAMM_AREAS[0]
   , [activeAreaId]);
 
+  const loadLocalQuestion = () => {
+    setIsLoading(true);
+    const filtered = LOCAL_BANK.filter(q => q.level === activeLevel && q.area === activeArea.title);
+    const secondary = filtered.length > 0 ? filtered : LOCAL_BANK.filter(q => q.level === activeLevel);
+    const pool = secondary.length > 0 ? secondary : LOCAL_BANK;
+    const randomQ = pool[Math.floor(Math.random() * pool.length)];
+    
+    setTimeout(() => {
+      setCurrentQuestion(randomQ);
+      setIsLoading(false);
+    }, 600);
+  };
+
   const fetchNewQuestion = async () => {
     setIsLoading(true);
     setSelectedOption(null);
     setIsEvaluated(false);
-    setErrorMsg('');
     setCurrentQuestion(null);
     setIsSidebarOpen(false);
 
@@ -103,7 +113,6 @@ export default function App() {
     
     const promptText = `Genera un reactivo USICAMM oficial para ${activeLevel} en ${activeArea.title}. 
     USA ESTA BIBLIOGRAFÍA: ${CORE_KNOWLEDGE}
-    INSTRUCCIONES: Crea un caso práctico inédito. La respuesta correcta debe fundamentarse en las leyes o autores citados.
     RESPONDE SOLO JSON: {"type": "string", "base": "string", "options": [{"id": "A", "text": "string"}], "correct": "A", "argumentation": "string", "aiTip": "string"}`;
 
     try {
@@ -124,10 +133,8 @@ export default function App() {
       setCurrentQuestion(JSON.parse(cleanJson));
       setIsLoading(false);
     } catch (err) {
-      console.log("Error de conexión, usando banco local...");
-      const filtered = LOCAL_BANK.filter(q => q.level === activeLevel);
-      const randomQ = (filtered.length > 0 ? filtered : LOCAL_BANK)[Math.floor(Math.random() * LOCAL_BANK.length)];
-      setTimeout(() => { setCurrentQuestion(randomQ); setIsLoading(false); }, 600);
+      console.log("Conexión lenta, activando banco local...");
+      loadLocalQuestion();
     }
   };
 
@@ -162,8 +169,8 @@ export default function App() {
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Perfil de Promoción</h2>
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(l => (
-                <button key={String(l)} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
-                  {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {String(l)}
+                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
+                  {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {l}
                 </button>
               ))}
             </div>
@@ -173,9 +180,9 @@ export default function App() {
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4">Ejes de Evaluación</h2>
             <div className="space-y-2">
               {USICAMM_AREAS.map(a => (
-                <button key={String(a.id)} onClick={() => { setActiveAreaId(a.id); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-left transition-all border-2 ${activeAreaId === a.id ? 'bg-slate-800 border-emerald-500 text-white shadow-lg' : 'border-transparent text-slate-500 hover:bg-slate-800/50'}`}>
+                <button key={a.id} onClick={() => { setActiveAreaId(a.id); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-left transition-all border-2 ${activeAreaId === a.id ? 'bg-slate-800 border-emerald-500 text-white shadow-lg' : 'border-transparent text-slate-500 hover:bg-slate-800/50'}`}>
                   <div className={activeAreaId === a.id ? 'text-emerald-400' : 'text-slate-600'}>{a.icon}</div>
-                  <span className="text-xs font-bold leading-tight">{String(a.title)}</span>
+                  <span className="text-xs font-bold leading-tight">{a.title}</span>
                 </button>
               ))}
             </div>
@@ -241,10 +248,10 @@ export default function App() {
               <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
                 <div className="p-8 lg:p-12 bg-slate-50/50 border-b border-slate-100 relative">
                   <div className="flex justify-between items-center mb-6">
-                    <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">{String(currentQuestion.type)}</span>
+                    <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">{currentQuestion.type}</span>
                     <Award className="text-amber-500" size={24} />
                   </div>
-                  <h3 className="text-2xl lg:text-3xl font-medium leading-snug text-slate-800 whitespace-pre-line">{String(currentQuestion.base)}</h3>
+                  <h3 className="text-2xl lg:text-3xl font-medium leading-snug text-slate-800 whitespace-pre-line">{currentQuestion.base}</h3>
                 </div>
                 <div className="p-8 lg:p-12 space-y-4">
                   {currentQuestion.options.map((opt) => {
@@ -258,9 +265,9 @@ export default function App() {
                     else style += "opacity-30 grayscale border-slate-50";
 
                     return (
-                      <button key={String(opt.id)} onClick={() => !isEvaluated && setSelectedOption(opt.id)} className={style} disabled={isEvaluated}>
-                        <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl border-2 transition-all ${isSelected && !isEvaluated ? 'bg-white text-slate-900 border-white' : isCorrect ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-slate-100 text-slate-400'}`}>{String(opt.id)}</div>
-                        <span className="text-lg lg:text-xl font-medium flex-1 pt-1 leading-snug">{String(opt.text)}</span>
+                      <button key={opt.id} onClick={() => !isEvaluated && setSelectedOption(opt.id)} className={style} disabled={isEvaluated}>
+                        <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl border-2 transition-all ${isSelected && !isEvaluated ? 'bg-white text-slate-900 border-white' : isCorrect ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-slate-100 text-slate-400'}`}>{opt.id}</div>
+                        <span className="text-lg lg:text-xl font-medium flex-1 pt-1 leading-snug">{opt.text}</span>
                         {isCorrect && <CheckCircle2 className="text-emerald-500 mt-1 shrink-0" size={28} />}
                         {isWrong && <XCircle className="text-red-500 mt-1 shrink-0" size={28} />}
                       </button>
@@ -279,13 +286,13 @@ export default function App() {
                       <h4 className={`text-2xl font-black mb-3 ${selectedOption === currentQuestion.correct ? 'text-emerald-800' : 'text-red-800'}`}>
                         {selectedOption === currentQuestion.correct ? '¡Sustento Correcto!' : 'Respuesta Incorrecta'}
                       </h4>
-                      <p className="text-slate-700 text-lg leading-relaxed">{String(currentQuestion.argumentation)}</p>
+                      <p className="text-slate-700 text-lg leading-relaxed">{currentQuestion.argumentation}</p>
                     </div>
                   </div>
                   <div className="bg-[#0f172a] p-8 lg:p-12 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -mr-24 -mt-24 group-hover:bg-emerald-500/20 transition-all" />
                     <div className="flex items-center gap-4 mb-4"><Lightbulb className="text-emerald-400" size={32} fill="currentColor" /><h4 className="font-black text-emerald-400 uppercase tracking-widest text-lg leading-none">Estrategia del Tutor</h4></div>
-                    <p className="text-slate-300 text-xl font-medium italic leading-relaxed">"{String(currentQuestion.aiTip)}"</p>
+                    <p className="text-slate-300 text-xl font-medium italic leading-relaxed">"{currentQuestion.aiTip}"</p>
                   </div>
                 </div>
               )}
