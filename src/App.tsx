@@ -7,7 +7,6 @@ import {
   BrainCircuit,
   CheckCircle2,
   ChevronRight,
-  CreditCard,
   FileCheck,
   GraduationCap,
   Lightbulb,
@@ -110,22 +109,26 @@ export default function App() {
       }
 
       setCurrentQuestion(data);
-    } catch (error: any) {
-      setApiError(
-        error.message ||
-          'No se pudo conectar con el generador de reactivos. Revisa la configuración de Gemini en Vercel.'
-      );
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'No se pudo conectar con el generador de reactivos. Revisa la configuración de Gemini en Vercel.';
+
+      setApiError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleVerify = () => {
-    if (!selectedOption || isEvaluated || !currentQuestion) return;
+    if (!selectedOption || isEvaluated || !currentQuestion) {
+      return;
+    }
 
     setIsEvaluated(true);
 
-    const isCorrect = String(selectedOption) === String(currentQuestion.correct);
+    const isCorrect = selectedOption === currentQuestion.correct;
 
     setStats(previousStats => ({
       correct: previousStats.correct + (isCorrect ? 1 : 0),
@@ -135,15 +138,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col lg:flex-row font-sans text-slate-900 overflow-x-hidden">
-      {isSidebarOpen && (
+      {isSidebarOpen ? (
         <div
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
-      )}
+      ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 w-80 bg-[#0f172a] text-slate-300 flex flex-col z-50 transition-transform duration-300 transform ${
+        className={`fixed inset-y-0 left-0 w-80 bg-[#0f172a] text-slate-300 flex flex-col z-50 transition-transform duration-300 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -163,7 +166,11 @@ export default function App() {
             </div>
           </div>
 
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400">
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden text-slate-400"
+          >
             <X />
           </button>
         </div>
@@ -178,6 +185,7 @@ export default function App() {
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(level => (
                 <button
+                  type="button"
                   key={level}
                   onClick={() => {
                     setActiveLevel(level);
@@ -205,6 +213,7 @@ export default function App() {
             <div className="space-y-2">
               {USICAMM_AREAS.map(area => (
                 <button
+                  type="button"
                   key={area.id}
                   onClick={() => {
                     setActiveAreaId(area.id);
@@ -228,8 +237,7 @@ export default function App() {
 
           <section className="px-4">
             <div className="bg-gradient-to-br from-amber-400/10 to-amber-600/10 border border-amber-500/20 rounded-2xl p-4">
-              <p className="text-[10px] font-black text-amber-600 uppercase mb-2 flex items-center gap-1">
-                <CreditCard size={12} />
+              <p className="text-[10px] font-black text-amber-600 uppercase mb-2">
                 Próximamente
               </p>
 
@@ -237,7 +245,10 @@ export default function App() {
                 Generador de exámenes en PDF y reportes personalizados por área.
               </p>
 
-              <button className="w-full py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase hover:bg-amber-600 transition-all">
+              <button
+                type="button"
+                className="w-full py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase hover:bg-amber-600 transition-all"
+              >
                 Ver avance
               </button>
             </div>
@@ -267,6 +278,7 @@ export default function App() {
       <main className="flex-1 flex flex-col lg:ml-80">
         <header className="bg-white border-b p-4 flex items-center justify-between lg:hidden sticky top-0 z-30 shadow-sm">
           <button
+            type="button"
             onClick={() => setIsSidebarOpen(true)}
             className="p-2 bg-slate-100 rounded-xl text-slate-600"
           >
@@ -310,9 +322,9 @@ export default function App() {
             </div>
           </div>
 
-          {!currentQuestion && !isLoading && !apiError && (
-            <div className="bg-white rounded-[2.5rem] p-10 lg:p-20 text-center shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-700">
-              <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-slate-100 transform -rotate-3 shadow-inner">
+          {!currentQuestion && !isLoading && !apiError ? (
+            <div className="bg-white rounded-[2.5rem] p-10 lg:p-20 text-center shadow-2xl border border-slate-100">
+              <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-slate-100 shadow-inner">
                 <BrainCircuit size={48} className="text-emerald-500" />
               </div>
 
@@ -325,6 +337,7 @@ export default function App() {
               </p>
 
               <button
+                type="button"
                 onClick={fetchNewQuestion}
                 className="w-full lg:w-auto bg-[#0f172a] text-white px-12 py-5 rounded-[2.5rem] font-black text-xl hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-4 mx-auto"
               >
@@ -333,10 +346,10 @@ export default function App() {
                 <ChevronRight size={24} />
               </button>
             </div>
-          )}
+          ) : null}
 
-          {isLoading && (
-            <div className="py-20 text-center animate-in fade-in">
+          {isLoading ? (
+            <div className="py-20 text-center">
               <div className="relative w-24 h-24 mx-auto mb-10 text-emerald-500 animate-spin">
                 <RefreshCw size={96} />
               </div>
@@ -349,10 +362,10 @@ export default function App() {
                 Generando un caso práctico para {activeLevel}
               </p>
             </div>
-          )}
+          ) : null}
 
-          {apiError && (
-            <div className="bg-white rounded-[2.5rem] p-10 lg:p-16 text-center border-2 border-red-100 shadow-xl animate-in zoom-in-95 duration-500">
+          {apiError ? (
+            <div className="bg-white rounded-[2.5rem] p-10 lg:p-16 text-center border-2 border-red-100 shadow-xl">
               <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertCircle size={48} />
               </div>
@@ -362,10 +375,11 @@ export default function App() {
               </h3>
 
               <p className="text-red-700 text-lg mb-10 max-w-md mx-auto">
-                {String(apiError)}
+                {apiError}
               </p>
 
               <button
+                type="button"
                 onClick={fetchNewQuestion}
                 className="bg-red-600 text-white px-10 py-4 rounded-[1.5rem] font-black text-lg hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-3 mx-auto shadow-red-200"
               >
@@ -373,21 +387,21 @@ export default function App() {
                 Reintentar Ahora
               </button>
             </div>
-          )}
+          ) : null}
 
-          {currentQuestion && !isLoading && (
-            <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-700 pb-20">
+          {currentQuestion && !isLoading ? (
+            <div className="space-y-8 pb-20">
               <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
-                <div className="p-8 lg:p-12 bg-slate-50/50 border-b border-slate-100 relative">
+                <div className="p-8 lg:p-12 bg-slate-50/50 border-b border-slate-100">
                   <div className="flex justify-between items-center mb-6">
                     <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-emerald-500/20">
-                      {String(currentQuestion.type)}
+                      {currentQuestion.type}
                     </span>
                     <Award className="text-amber-500" size={24} />
                   </div>
 
                   <h3 className="text-2xl lg:text-3xl font-medium leading-snug text-slate-800 whitespace-pre-line">
-                    {String(currentQuestion.base)}
+                    {currentQuestion.base}
                   </h3>
                 </div>
 
@@ -414,6 +428,7 @@ export default function App() {
 
                     return (
                       <button
+                        type="button"
                         key={option.id}
                         onClick={() => {
                           if (!isEvaluated) {
@@ -428,32 +443,32 @@ export default function App() {
                             isSelected && !isEvaluated
                               ? 'bg-white text-slate-900 border-white'
                               : isCorrect
-                              ? 'bg-emerald-500 text-white border-emerald-500'
-                              : 'bg-slate-100 text-slate-400'
+                                ? 'bg-emerald-500 text-white border-emerald-500'
+                                : 'bg-slate-100 text-slate-400'
                           }`}
                         >
                           {option.id}
                         </div>
 
                         <span className="text-lg lg:text-xl font-medium flex-1 pt-1 leading-tight">
-                          {String(option.text)}
+                          {option.text}
                         </span>
 
-                        {isCorrect && (
+                        {isCorrect ? (
                           <CheckCircle2 className="text-emerald-500 mt-1 shrink-0" size={28} />
-                        )}
+                        ) : null}
 
-                        {isWrong && (
+                        {isWrong ? (
                           <XCircle className="text-red-500 mt-1 shrink-0" size={28} />
-                        )}
+                        ) : null}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {isEvaluated && (
-                <div className="space-y-6 animate-in slide-in-from-top-6 duration-500">
+              {isEvaluated ? (
+                <div className="space-y-6">
                   <div
                     className={`p-8 lg:p-12 rounded-[2.5rem] border-2 flex flex-col md:flex-row gap-8 shadow-sm ${
                       selectedOption === currentQuestion.correct
@@ -489,7 +504,7 @@ export default function App() {
                       </h4>
 
                       <p className="text-slate-700 text-lg leading-relaxed">
-                        {String(currentQuestion.argumentation)}
+                        {currentQuestion.argumentation}
                       </p>
                     </div>
                   </div>
@@ -505,15 +520,16 @@ export default function App() {
                     </div>
 
                     <p className="text-slate-300 text-xl font-medium italic leading-relaxed">
-                      “{String(currentQuestion.aiTip)}”
+                      {currentQuestion.aiTip}
                     </p>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               <div className="flex justify-end pt-8">
                 {!isEvaluated ? (
                   <button
+                    type="button"
                     onClick={handleVerify}
                     disabled={!selectedOption}
                     className={`w-full lg:w-auto px-16 py-6 rounded-[2.5rem] font-black text-2xl shadow-2xl transition-all ${
@@ -526,6 +542,7 @@ export default function App() {
                   </button>
                 ) : (
                   <button
+                    type="button"
                     onClick={fetchNewQuestion}
                     className="w-full lg:w-auto bg-[#0f172a] text-white px-16 py-6 rounded-[2.5rem] font-black text-2xl hover:scale-105 transition-all shadow-2xl flex items-center justify-center gap-4 shadow-slate-900/40"
                   >
@@ -535,7 +552,7 @@ export default function App() {
                 )}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </main>
     </div>
