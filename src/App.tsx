@@ -73,58 +73,68 @@ export default function App() {
 
     const apiKey = "AIzaSyDkP5YHhMkLTYH1O9fW44rHe8309CTCQlM";
     
-    // Probamos todos los nombres posibles de modelos para asegurar compatibilidad
+    // Nombres técnicos exactos según la última documentación de Google
     const modelOptions = [
-      "gemini-1.5-flash", 
-      "gemini-1.5-flash-latest", 
-      "gemini-1.5-pro", 
-      "gemini-pro"
+      "gemini-1.5-flash",
+      "gemini-1.5-flash-8b",
+      "gemini-1.5-pro"
     ];
     
     let success = false;
-    let errorDetails = "";
+    let lastTechnicalError = "";
+
+    const freshness = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const promptText = `Actúa como experto evaluador de USICAMM México. 
+    Genera UN reactivo de opción múltiple (A, B, C) sobre un CASO PRÁCTICO.
+    NIVEL: ${activeLevel}. ÁREA: ${activeArea.title}. BIBLIOGRAFÍA: ${CORE_KNOWLEDGE}. ID: ${freshness}.
+    RESPONDE EXCLUSIVAMENTE CON JSON: {"type":"Cuestionamiento","base":"...","options":[{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."}],"correct":"A","argumentation":"...","aiTip":"..."}`;
 
     for (const modelName of modelOptions) {
       if (success) break;
       
       try {
+        // Probamos con la ruta v1beta que es la más flexible para modelos Flash
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-        const freshness = `${Date.now()}-${Math.random()}`;
-        
-        const promptText = `Eres experto USICAMM. Genera UN reactivo de opción múltiple (A, B, C) sobre un CASO PRÁCTICO.
-        NIVEL: ${activeLevel}. ÁREA: ${activeArea.title}. BIBLIOGRAFÍA: ${CORE_KNOWLEDGE}. SEED: ${freshness}.
-        RESPONDE ESTRICTAMENTE EN JSON: {"type":"Cuestionamiento","base":"...","options":[{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."}],"correct":"A","argumentation":"...","aiTip":"..."}`;
 
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            contents: [{ parts: [{ text: promptText }] }]
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: {
+              temperature: 1,
+              topP: 0.95,
+              topK: 40,
+              maxOutputTokens: 1024,
+            }
           })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          const errData = await response.json();
-          errorDetails = `Error ${response.status}: ${errData.error?.message || 'No autorizado'}`;
-          continue; // Probar siguiente modelo
+          lastTechnicalError = data.error?.message || `Error ${response.status}`;
+          continue; 
         }
 
-        const data = await response.json();
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        
-        // Limpiamos la respuesta por si la IA agrega bloques de código
+        // Limpieza de posibles etiquetas markdown de la IA
         const cleanJson = rawText.replace(/```json|```/g, '').trim();
-        setCurrentQuestion(JSON.parse(cleanJson));
-        success = true;
-        setIsLoading(false);
+        const parsed = JSON.parse(cleanJson);
+        
+        if (parsed.base && parsed.options) {
+          setCurrentQuestion(parsed);
+          success = true;
+          setIsLoading(false);
+        }
       } catch (err: any) {
-        errorDetails = err.message;
-        console.warn(`Intento con ${modelName} falló:`, err);
+        lastTechnicalError = err.message;
+        console.warn(`Modelo ${modelName} falló:`, err);
       }
     }
 
     if (!success) {
-      setApiError(`Fallo de Conexión: ${errorDetails}. Por favor, verifica que tu API Key sea válida en Google AI Studio.`);
+      setApiError(`Google no respondió (Detalle: ${lastTechnicalError}). Esto suele ser un bloqueo temporal de la API Key. Por favor, intenta de nuevo en un momento.`);
       setIsLoading(false);
     }
   };
@@ -139,18 +149,17 @@ export default function App() {
   const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col lg:flex-row font-sans text-slate-900 overflow-x-hidden">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col lg:flex-row font-sans text-slate-900 overflow-x-hidden text-balance">
       
       {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
       
-      {/* SIDEBAR */}
       <aside className={`fixed inset-y-0 left-0 w-80 bg-[#0f172a] text-slate-300 flex flex-col z-50 transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-8 border-b border-slate-800 flex items-center justify-between text-white">
           <div className="flex items-center gap-3">
             <div className="bg-emerald-500 p-2 rounded-xl shadow-lg shadow-emerald-500/20"><BrainCircuit size={28} /></div>
             <div>
               <h1 className="text-2xl font-black leading-none tracking-tighter">USICAMM<span className="text-emerald-400">AI</span></h1>
-              <p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-widest leading-none">Producción Final</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-widest leading-none">Motor Generativo</p>
             </div>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400"><X /></button>
@@ -158,10 +167,10 @@ export default function App() {
 
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
           <section>
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Perfil de Usuario</h2>
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Tu Perfil</h2>
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(l => (
-                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
+                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'hover:bg-slate-800 text-slate-400'}`}>
                    {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {l}
                 </button>
               ))}
@@ -200,9 +209,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col lg:ml-80">
-        
         <header className="bg-white border-b p-4 flex items-center justify-between lg:hidden sticky top-0 z-30 shadow-sm">
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 bg-slate-100 rounded-xl text-slate-600"><Menu size={24} /></button>
           <div className="flex flex-col items-center">
@@ -219,7 +226,7 @@ export default function App() {
               <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 shadow-slate-200/50"><ShieldCheck className="text-emerald-500" /></div>
               <div><h2 className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none">Simulador Inteligente</h2><p className="text-xl font-bold text-slate-800 mt-1">{activeLevel} • {activeArea.title}</p></div>
             </div>
-            <div className="bg-emerald-500/10 text-emerald-600 px-4 py-2 rounded-full text-[10px] font-black flex items-center gap-2 border border-emerald-500/20 shadow-sm">
+            <div className="bg-emerald-500/10 text-emerald-600 px-4 py-2 rounded-full text-[10px] font-black flex items-center gap-2 border border-emerald-500/20">
                <FileCheck size={14} /> BIBLIOGRAFÍA SINCRONIZADA
             </div>
           </div>
@@ -227,7 +234,7 @@ export default function App() {
           {!currentQuestion && !isLoading && !apiError && (
             <div className="bg-white rounded-[2.5rem] p-10 lg:p-20 text-center shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-700">
               <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-slate-100 transform -rotate-3 shadow-inner"><BrainCircuit size={48} className="text-emerald-500" /></div>
-              <h3 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6 tracking-tight leading-none text-balance">Generación Ilimitada 2026</h3>
+              <h3 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6 tracking-tight leading-none">Generación Ilimitada 2026</h3>
               <p className="text-slate-500 text-lg lg:text-xl mb-12 max-w-xl mx-auto leading-relaxed text-balance">Estudia con casos prácticos reales diseñados por IA en tiempo real basándose en los documentos oficiales SEP.</p>
               <button onClick={fetchNewQuestion} className="w-full lg:w-auto bg-[#0f172a] text-white px-12 py-5 rounded-[2.5rem] font-black text-xl hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-4 mx-auto">
                 <Sparkles size={24} /> Empezar Entrenamiento <ChevronRight size={24} />
@@ -258,7 +265,7 @@ export default function App() {
             <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-700 pb-20">
               <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
                 <div className="p-8 lg:p-12 bg-slate-50/50 border-b border-slate-100 relative">
-                  <div className="flex justify-between items-center mb-6 text-balance">
+                  <div className="flex justify-between items-center mb-6">
                     <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-emerald-500/20">{String(currentQuestion.type)}</span>
                     <Award className="text-amber-500" size={24} />
                   </div>
@@ -275,7 +282,7 @@ export default function App() {
                     } else {
                       if (isCorrect) style += "border-emerald-500 bg-emerald-50 text-emerald-900";
                       else if (isWrong) style += "border-red-500 bg-red-50 text-red-900";
-                      else style += "opacity-30 grayscale border-slate-50";
+                      else style += "border-slate-100 bg-white opacity-40 grayscale text-slate-500";
                     }
 
                     return (
