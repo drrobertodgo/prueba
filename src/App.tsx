@@ -31,7 +31,7 @@ const USICAMM_AREAS = [
 
 const EDUCATIONAL_LEVELS = ['Preescolar', 'Primaria', 'Secundaria', 'Supervisión'];
 
-// RESUMEN TÉCNICO DE LA BIBLIOGRAFÍA (Sincronizado con tus documentos)
+// RESUMEN TÉCNICO DE LA BIBLIOGRAFÍA
 const CORE_KNOWLEDGE = `
 - MARCO LEGAL: Art. 3º (Inclusión, Excelencia), LGE (NEM), LGDNNA (Interés Superior).
 - ACUERDOS: 05/04/24 (CTE), 14/12/23 (Acoso), 17/05/25 (Violencia Sexual), 30/09/24 (Salud).
@@ -71,23 +71,22 @@ export default function App() {
     setCurrentQuestion(null);
     setIsSidebarOpen(false);
 
-    // LLAVE Y RUTA ESTABLE (v1 en lugar de v1beta)
+    // LLAVE Y RUTA COMPATIBLE (v1beta + gemini-1.5-flash)
     const apiKey = "AIzaSyDkP5YHhMkLTYH1O9fW44rHe8309CTCQlM"; 
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
     const freshnessToken = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    const promptText = `Eres el evaluador líder de USICAMM México. 
-    TAREA: Generar UN reactivo de opción múltiple (A, B, C) sobre un CASO PRÁCTICO.
-    NIVEL: "${activeLevel}"
-    ÁREA TEMÁTICA: "${activeArea.title}"
+    const promptText = `Actúa como el experto evaluador de USICAMM. 
+    Genera UN reactivo inédito de opción múltiple (A, B, C) sobre un CASO PRÁCTICO para el nivel de ${activeLevel}.
+    ÁREA TEMÁTICA OBLIGATORIA: ${activeArea.title}
     BIBLIOGRAFÍA: ${CORE_KNOWLEDGE}
     ID SESIÓN: ${freshnessToken}
     
     INSTRUCCIONES:
-    1. El caso debe ser un dilema técnico o ético realista.
-    2. La respuesta correcta debe fundamentarse en la bibliografía citada.
-    3. RESPONDE EXCLUSIVAMENTE CON UN JSON VÁLIDO.
+    1. El caso debe ser un dilema técnico basado en la realidad escolar mexicana.
+    2. La respuesta correcta debe citar forzosamente un Acuerdo o Ley en la argumentación.
+    3. Responde únicamente con un objeto JSON válido.
     
     JSON ESTRUCTURA:
     {
@@ -95,8 +94,8 @@ export default function App() {
       "base": "Planteamiento del caso...",
       "options": [{"id": "A", "text": "..."}, {"id": "B", "text": "..."}, {"id": "C", "text": "..."}],
       "correct": "A",
-      "argumentation": "Explicación legal...",
-      "aiTip": "Tip estratégico..."
+      "argumentation": "Explicación detallada...",
+      "aiTip": "Estrategia de descarte..."
     }`;
 
     try {
@@ -104,13 +103,16 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          contents: [{ parts: [{ text: promptText }] }]
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
         })
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error?.message || `Error ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `Error HTTP ${response.status}`);
       }
 
       const data = await response.json();
@@ -122,7 +124,7 @@ export default function App() {
       setIsLoading(false);
     } catch (err: any) {
       console.error(err);
-      setApiError(`Ajuste de Motor: ${err.message}. Reintenta ahora para refrescar la conexión.`);
+      setApiError(`Ajuste de Motor: ${err.message}. Estamos refinando la conexión con Google, intenta de nuevo.`);
       setIsLoading(false);
     }
   };
@@ -141,7 +143,6 @@ export default function App() {
       
       {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
       
-      {/* SIDEBAR */}
       <aside className={`fixed inset-y-0 left-0 w-80 bg-[#0f172a] text-slate-300 flex flex-col z-50 transition-transform duration-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-8 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -159,7 +160,7 @@ export default function App() {
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Rol de Evaluación</h2>
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(l => (
-                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
+                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setApiError(null); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'hover:bg-slate-800 text-slate-400'}`}>
                    {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {l}
                 </button>
               ))}
@@ -198,7 +199,7 @@ export default function App() {
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">USICAMM AI</span>
             <span className="text-xs font-bold text-emerald-600 leading-none mt-1">{activeLevel}</span>
           </div>
-          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xs font-black text-emerald-600">{stats.correct}/{stats.total}</div>
+          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xs font-black text-emerald-600 shadow-inner">{stats.correct}/{stats.total}</div>
         </header>
 
         <div className="max-w-4xl mx-auto w-full px-4 py-8 lg:p-12">
@@ -228,7 +229,7 @@ export default function App() {
             <div className="py-20 text-center animate-in fade-in">
               <div className="relative w-24 h-24 mx-auto mb-10 text-emerald-500 animate-spin"><RefreshCw size={96} /></div>
               <h4 className="text-3xl font-black text-slate-800 tracking-tighter">Gemini está pensando...</h4>
-              <p className="text-slate-400 mt-2 font-medium italic">Consultando Leyes y Acuerdos SEP 2026</p>
+              <p className="text-slate-400 mt-2 font-medium italic">Cruzando Leyes y Acuerdos SEP 2026</p>
             </div>
           )}
 
