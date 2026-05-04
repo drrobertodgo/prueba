@@ -21,51 +21,29 @@ import {
   FileCheck
 } from 'lucide-react';
 
-// --- BANCO DE PREGUNTAS PREMIUM (Respaldo para evitar errores de conexión) ---
+// --- BANCO DE RESPALDO (2026) ---
 const LOCAL_BANK = [
   {
     level: "Primaria", area: "Área 1. Aspectos normativos", type: "Caso Práctico",
-    base: "Un alumno de tercer grado presenta dificultades severas de comunicación. El docente solicita que el alumno sea retirado del grupo regular y enviado a un CAM, alegando que afecta el avance de los demás. ¿Qué debe resolver la dirección?",
+    base: "Un alumno con discapacidad motriz no puede entrar a la biblioteca porque hay escalones. El comité de padres sugiere que el niño 'se quede en el salón leyendo'. ¿Qué principio legal se vulnera?",
     options: [
-      { id: "A", text: "Autorizar el cambio priorizando el derecho del grupo a la excelencia educativa." },
-      { id: "B", text: "Negar el cambio e instruir la aplicación de ajustes razonables en el aula regular (LGE Art. 61)." },
-      { id: "C", text: "Pedir a los padres que paguen un monitor privado para que el niño pueda quedarse." }
+      { id: "A", text: "Principio de Gratuidad." },
+      { id: "B", text: "Principio de Inclusión y Accesibilidad (LGE Art. 61)." },
+      { id: "C", text: "Principio de Laicidad." }
     ],
-    correct: "B", argumentation: "La educación inclusiva es un mandato legal. La escuela debe eliminar las barreras (BAP) y no segregar al alumno.",
-    aiTip: "USICAMM: Cualquier opción que implique 'sacar' o 'separar' a un alumno es incorrecta."
+    correct: "B", argumentation: "La Inclusión obliga a la escuela a realizar Ajustes Razonables y eliminar barreras físicas para garantizar el derecho a la educación.",
+    aiTip: "USICAMM premia siempre las opciones que hablen de 'Ajustes Razonables'."
   },
   {
-    level: "Supervisión", area: "Área 2. Gestión escolar / educativa", type: "Asesoría Técnica",
-    base: "Usted observa que en un plantel de su zona, el Director impone las metas del Programa de Mejora Continua sin consenso. Según Margarita Zorrilla, ¿cuál es su función como supervisor?",
+    level: "Supervisión", area: "Área 1. Aspectos normativos", type: "Caso: Zorrilla",
+    base: "Usted es supervisor y nota que los directores le temen a sus visitas porque solo busca errores en las actas de CTE. ¿Qué transformación sugiere Margarita Zorrilla?",
     options: [
-      { id: "A", text: "Levantar un acta administrativa contra el director por falta de ética." },
-      { id: "B", text: "Brindar asesoría técnica para transformar la gestión hacia un liderazgo pedagógico y participativo." },
-      { id: "C", text: "Modificar usted mismo el documento para que cumpla con los requisitos de la zona." }
+      { id: "A", text: "Aumentar la frecuencia de visitas para que se acostumbren." },
+      { id: "B", text: "Cambiar la vigilancia administrativa por una asesoría técnica sistemática basada en la confianza." },
+      { id: "C", text: "Delegar las visitas a los ATP para evitar el conflicto directo." }
     ],
-    correct: "B", argumentation: "La supervisión debe evolucionar de la vigilancia administrativa a la asesoría técnica sistemática que acompañe la toma de decisiones colectivas.",
-    aiTip: "Hack: Busca siempre respuestas que hablen de 'Asesoría', 'Acompañamiento' y 'Diálogo'."
-  },
-  {
-    level: "Primaria", area: "Área 1. Aspectos normativos", type: "Protección Infantil",
-    base: "Una niña de 9 años confiesa que un familiar la toca de forma inapropiada. Pide que no se lo digan a nadie. ¿Qué protocolo debe seguir la dirección?",
-    options: [
-      { id: "A", text: "Esperar a hablar con la madre para confirmar antes de hacer cualquier reporte." },
-      { id: "B", text: "Notificar de inmediato a la Procuraduría de Protección de NNA, siguiendo el Interés Superior de la Niñez." },
-      { id: "C", text: "Realizar una junta de maestros para decidir si la niña está diciendo la verdad." }
-    ],
-    correct: "B", argumentation: "Ante la sospecha de abuso o maltrato, la obligación legal es el aviso inmediato a la autoridad competente. El derecho a la protección es absoluto.",
-    aiTip: "Palabra Clave: En casos de abuso, la respuesta correcta siempre incluye 'Notificación Inmediata'."
-  },
-  {
-    level: "Primaria", area: "Área 2. Gestión escolar / educativa", type: "CTE y PMC",
-    base: "El Comité de Planeación de una escuela ha terminado el diagnóstico socioeducativo. ¿Qué paso sigue según las orientaciones del Proceso de Mejora Continua 2024?",
-    options: [
-      { id: "A", text: "Entregar el informe a la supervisión y esperar la aprobación para actuar." },
-      { id: "B", text: "Definir Objetivos, Metas y Acciones que atiendan las problemáticas prioritarias detectadas." },
-      { id: "C", text: "Realizar una evaluación de impacto para ver si el diagnóstico fue correcto." }
-    ],
-    correct: "B", argumentation: "El PMC es un ciclo: Diagnóstico -> Planeación (Objetivos/Metas) -> Acción -> Seguimiento -> Evaluación.",
-    aiTip: "Tip: El diagnóstico no sirve de nada si no se traduce en objetivos y acciones concretas."
+    correct: "B", argumentation: "Margarita Zorrilla propone que la supervisión debe ser un apoyo pedagógico, no un órgano de fiscalización punitivo.",
+    aiTip: "Palabra clave para supervisores: 'Asesoría y Acompañamiento'."
   }
 ];
 
@@ -76,6 +54,20 @@ const USICAMM_AREAS = [
 ];
 
 const EDUCATIONAL_LEVELS = ['Preescolar', 'Primaria', 'Secundaria', 'Supervisión'];
+
+// --- BASE DE CONOCIMIENTO (Sincronizada con Bibliografía Oficial) ---
+const CORE_KNOWLEDGE = `
+1. Art. 3º Constitucional: Inclusión, Excelencia y Humanismo.
+2. Ley General de Educación: Marco de la Nueva Escuela Mexicana.
+3. LGDNNA: Interés Superior de la Niñez y Protección.
+4. Acuerdo 05/04/24: Funcionamiento de los Consejos Técnicos Escolares.
+5. Acuerdo 14/12/23: Erradicación del Acoso Escolar.
+6. Acuerdo 17/05/25: Protocolos de Violencia Sexual.
+7. Plan de Estudios 2022: Programa Analítico y Codiseño.
+8. Antonio Bolívar: Escuela, Familia y Comunidad.
+9. Margarita Zorrilla: Gestión y Supervisión Escolar.
+10. José Weinstein: Liderazgo Directivo Pedagógico.
+`;
 
 interface Question {
   type: string; base: string;
@@ -94,7 +86,9 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const activeArea = useMemo(() => USICAMM_AREAS.find(a => a.id === activeAreaId) || USICAMM_AREAS[0], [activeAreaId]);
+  const activeArea = useMemo(() => 
+    USICAMM_AREAS.find(a => a.id === activeAreaId) || USICAMM_AREAS[0]
+  , [activeAreaId]);
 
   const fetchNewQuestion = async () => {
     setIsLoading(true);
@@ -104,15 +98,17 @@ export default function App() {
     setCurrentQuestion(null);
     setIsSidebarOpen(false);
 
-    const apiKey = ""; // API Key proveída por el entorno
+    const apiKey = ""; 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
     
-    const promptText = `Eres experto USICAMM. Genera un reactivo JSON para ${activeLevel} en ${activeArea.title} basado en la Nueva Escuela Mexicana. Responde solo JSON: {"type": "string", "base": "string", "options": [{"id": "A", "text": "string"}], "correct": "A", "argumentation": "string", "aiTip": "string"}`;
+    const promptText = `Genera un reactivo USICAMM oficial para ${activeLevel} en ${activeArea.title}. 
+    USA ESTA BIBLIOGRAFÍA: ${CORE_KNOWLEDGE}
+    INSTRUCCIONES: Crea un caso práctico inédito. La respuesta correcta debe fundamentarse en las leyes o autores citados.
+    RESPONDE SOLO JSON: {"type": "string", "base": "string", "options": [{"id": "A", "text": "string"}], "correct": "A", "argumentation": "string", "aiTip": "string"}`;
 
     try {
-      // INTENTO CON GEMINI (Con tiempo de espera corto)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 segundos máximo
+      const timeoutId = setTimeout(() => controller.abort(), 7000); 
 
       const response = await fetch(url, {
         method: 'POST',
@@ -128,25 +124,21 @@ export default function App() {
       setCurrentQuestion(JSON.parse(cleanJson));
       setIsLoading(false);
     } catch (err) {
-      // FALLBACK AUTOMÁTICO AL BANCO LOCAL (El usuario no ve el error)
-      console.log("Gemini tardó demasiado, usando banco local...");
+      console.log("Error de conexión, usando banco local...");
       const filtered = LOCAL_BANK.filter(q => q.level === activeLevel);
-      const pool = filtered.length > 0 ? filtered : LOCAL_BANK;
-      const randomQ = pool[Math.floor(Math.random() * pool.length)];
-      
-      setTimeout(() => {
-        setCurrentQuestion(randomQ);
-        setIsLoading(false);
-      }, 500);
+      const randomQ = (filtered.length > 0 ? filtered : LOCAL_BANK)[Math.floor(Math.random() * LOCAL_BANK.length)];
+      setTimeout(() => { setCurrentQuestion(randomQ); setIsLoading(false); }, 600);
     }
   };
 
   const handleVerify = () => {
     if (!selectedOption || isEvaluated || !currentQuestion) return;
     setIsEvaluated(true);
-    const correct = selectedOption === currentQuestion.correct;
-    setStats(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
+    const isCorrect = selectedOption === currentQuestion.correct;
+    setStats(s => ({ correct: s.correct + (isCorrect ? 1 : 0), total: s.total + 1 }));
   };
+
+  const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col lg:flex-row font-sans text-slate-900 overflow-x-hidden">
@@ -159,7 +151,7 @@ export default function App() {
             <div className="bg-emerald-500 p-2 rounded-xl shadow-lg shadow-emerald-500/20"><BrainCircuit size={28} className="text-white" /></div>
             <div>
               <h1 className="text-2xl font-black text-white leading-none tracking-tighter">USICAMM<span className="text-emerald-400">AI</span></h1>
-              <p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-widest">Premium Pro</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-widest leading-none">Plataforma Oficial</p>
             </div>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400"><X /></button>
@@ -167,23 +159,23 @@ export default function App() {
 
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
           <section>
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Perfil de Estudio</h2>
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4 flex items-center gap-2"><GraduationCap size={14}/> Perfil de Promoción</h2>
             <div className="grid gap-2">
               {EDUCATIONAL_LEVELS.map(l => (
-                <button key={l} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
-                  {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {l}
+                <button key={String(l)} onClick={() => { setActiveLevel(l); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeLevel === l ? 'bg-emerald-500 text-white shadow-lg' : 'hover:bg-slate-800 text-slate-400'}`}>
+                  {l === 'Supervisión' ? <Zap size={16} /> : <BookOpen size={16} />} {String(l)}
                 </button>
               ))}
             </div>
           </section>
 
           <section>
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4">Áreas Temáticas</h2>
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-4">Ejes de Evaluación</h2>
             <div className="space-y-2">
               {USICAMM_AREAS.map(a => (
-                <button key={a.id} onClick={() => { setActiveAreaId(a.id); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-left transition-all border-2 ${activeAreaId === a.id ? 'bg-slate-800 border-emerald-500 text-white shadow-lg' : 'border-transparent text-slate-500 hover:bg-slate-800/50'}`}>
+                <button key={String(a.id)} onClick={() => { setActiveAreaId(a.id); setCurrentQuestion(null); setIsEvaluated(false); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-left transition-all border-2 ${activeAreaId === a.id ? 'bg-slate-800 border-emerald-500 text-white shadow-lg' : 'border-transparent text-slate-500 hover:bg-slate-800/50'}`}>
                   <div className={activeAreaId === a.id ? 'text-emerald-400' : 'text-slate-600'}>{a.icon}</div>
-                  <span className="text-xs font-bold leading-tight">{a.title}</span>
+                  <span className="text-xs font-bold leading-tight">{String(a.title)}</span>
                 </button>
               ))}
             </div>
@@ -193,7 +185,7 @@ export default function App() {
         <div className="p-6 bg-slate-900 border-t border-slate-800">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 border border-slate-700 mb-4 text-center">
              <p className="text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Rendimiento</p>
-             <span className="text-3xl font-black text-white">{stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0}%</span>
+             <span className="text-3xl font-black text-white">{accuracy}%</span>
           </div>
           <a href="https://wa.me/526181518337" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-2xl font-black text-xs hover:bg-[#128C7E] transition-all">
             <MessageCircle size={18} fill="currentColor"/> SOPORTE TÉCNICO
@@ -205,8 +197,8 @@ export default function App() {
         <header className="bg-white border-b p-4 flex items-center justify-between lg:hidden sticky top-0 z-30 shadow-sm">
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 bg-slate-100 rounded-xl text-slate-600"><Menu size={24} /></button>
           <div className="flex flex-col items-center">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">USICAMM AI</span>
-            <span className="text-xs font-bold text-emerald-600">{activeLevel}</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">USICAMM AI</span>
+            <span className="text-xs font-bold text-emerald-600 mt-1">{activeLevel}</span>
           </div>
           <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xs font-black text-emerald-600 shadow-inner">{stats.correct}/{stats.total}</div>
         </header>
@@ -215,20 +207,20 @@ export default function App() {
           <div className="hidden lg:flex items-center justify-between mb-12">
             <div className="flex items-center gap-4">
               <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100"><ShieldCheck className="text-emerald-500" /></div>
-              <div><h2 className="text-sm font-black text-slate-400 uppercase tracking-widest">Entrenamiento Activo</h2><p className="text-xl font-bold text-slate-800">{activeLevel} • {activeArea.title}</p></div>
+              <div><h2 className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none">Simulador Premium</h2><p className="text-xl font-bold text-slate-800 mt-1">{activeLevel} • {activeArea.title}</p></div>
             </div>
             <div className="bg-emerald-500/10 text-emerald-600 px-4 py-2 rounded-full text-[10px] font-black flex items-center gap-2 border border-emerald-500/20">
-               <FileCheck size={14} /> 40 DOCS SINCRONIZADOS
+               <FileCheck size={14} /> BIBLIOGRAFÍA OFICIAL SINCRONIZADA
             </div>
           </div>
 
           {!currentQuestion && !isLoading && (
             <div className="bg-white rounded-[2.5rem] p-10 lg:p-20 text-center shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-700">
-              <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-slate-100"><BrainCircuit size={48} className="text-emerald-500" /></div>
-              <h3 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6 tracking-tight leading-tight">Motor de Inteligencia Educativa</h3>
-              <p className="text-slate-500 text-lg lg:text-xl mb-12 max-w-xl mx-auto leading-relaxed">Cada reactivo se genera cruzando la bibliografía oficial 2026 y los nuevos Acuerdos SEP.</p>
+              <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-10 border-2 border-slate-100 transform -rotate-2"><BrainCircuit size={48} className="text-emerald-500" /></div>
+              <h3 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6 tracking-tighter leading-tight">Entrenamiento Inteligente</h3>
+              <p className="text-slate-500 text-lg lg:text-xl mb-12 max-w-xl mx-auto leading-relaxed">Nuestra IA genera reactivos nivel experto basados estrictamente en la bibliografía oficial 2026 y los Acuerdos SEP más recientes.</p>
               <button onClick={fetchNewQuestion} className="w-full lg:w-auto bg-[#0f172a] text-white px-12 py-5 rounded-[2rem] font-black text-xl hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-4 mx-auto">
-                <Sparkles size={24} /> Generar Reactivo Premium <ChevronRight size={24} />
+                <Sparkles size={24} /> Generar Reactivo Oficial <ChevronRight size={24} />
               </button>
             </div>
           )}
@@ -239,8 +231,8 @@ export default function App() {
                 <div className="absolute inset-0 border-4 border-slate-200 rounded-full" />
                 <div className="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin" />
               </div>
-              <h4 className="text-3xl font-black text-slate-800 tracking-tighter">Analizando bibliografía...</h4>
-              <p className="text-slate-400 mt-2 font-medium italic">Cruzando Leyes y Acuerdos SEP 2026</p>
+              <h4 className="text-3xl font-black text-slate-800 tracking-tighter">Consultando Bibliografía Oficial...</h4>
+              <p className="text-slate-400 mt-2 font-medium italic">Analizando Leyes, Acuerdos y Perfiles 2026</p>
             </div>
           )}
 
@@ -249,10 +241,10 @@ export default function App() {
               <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
                 <div className="p-8 lg:p-12 bg-slate-50/50 border-b border-slate-100 relative">
                   <div className="flex justify-between items-center mb-6">
-                    <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-emerald-500/20">{currentQuestion.type}</span>
+                    <span className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">{String(currentQuestion.type)}</span>
                     <Award className="text-amber-500" size={24} />
                   </div>
-                  <h3 className="text-2xl lg:text-3xl font-medium leading-snug text-slate-800 whitespace-pre-line">{currentQuestion.base}</h3>
+                  <h3 className="text-2xl lg:text-3xl font-medium leading-snug text-slate-800 whitespace-pre-line">{String(currentQuestion.base)}</h3>
                 </div>
                 <div className="p-8 lg:p-12 space-y-4">
                   {currentQuestion.options.map((opt) => {
@@ -266,9 +258,9 @@ export default function App() {
                     else style += "opacity-30 grayscale border-slate-50";
 
                     return (
-                      <button key={opt.id} onClick={() => !isEvaluated && setSelectedOption(opt.id)} className={style} disabled={isEvaluated}>
-                        <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl border-2 transition-all ${isSelected && !isEvaluated ? 'bg-white text-slate-900 border-white' : isCorrect ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-slate-100 text-slate-400'}`}>{opt.id}</div>
-                        <span className="text-lg lg:text-xl font-medium flex-1 pt-1 leading-snug">{opt.text}</span>
+                      <button key={String(opt.id)} onClick={() => !isEvaluated && setSelectedOption(opt.id)} className={style} disabled={isEvaluated}>
+                        <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl border-2 transition-all ${isSelected && !isEvaluated ? 'bg-white text-slate-900 border-white' : isCorrect ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-slate-100 text-slate-400'}`}>{String(opt.id)}</div>
+                        <span className="text-lg lg:text-xl font-medium flex-1 pt-1 leading-snug">{String(opt.text)}</span>
                         {isCorrect && <CheckCircle2 className="text-emerald-500 mt-1 shrink-0" size={28} />}
                         {isWrong && <XCircle className="text-red-500 mt-1 shrink-0" size={28} />}
                       </button>
@@ -287,22 +279,22 @@ export default function App() {
                       <h4 className={`text-2xl font-black mb-3 ${selectedOption === currentQuestion.correct ? 'text-emerald-800' : 'text-red-800'}`}>
                         {selectedOption === currentQuestion.correct ? '¡Sustento Correcto!' : 'Respuesta Incorrecta'}
                       </h4>
-                      <p className="text-slate-700 text-lg leading-relaxed">{currentQuestion.argumentation}</p>
+                      <p className="text-slate-700 text-lg leading-relaxed">{String(currentQuestion.argumentation)}</p>
                     </div>
                   </div>
                   <div className="bg-[#0f172a] p-8 lg:p-12 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -mr-24 -mt-24 group-hover:bg-emerald-500/20 transition-all" />
-                    <div className="flex items-center gap-4 mb-4"><Lightbulb className="text-emerald-400" size={32} fill="currentColor" /><h4 className="font-black text-emerald-400 uppercase tracking-widest text-lg">Estrategia del Tutor</h4></div>
-                    <p className="text-slate-300 text-xl font-medium italic leading-relaxed">"{currentQuestion.aiTip}"</p>
+                    <div className="flex items-center gap-4 mb-4"><Lightbulb className="text-emerald-400" size={32} fill="currentColor" /><h4 className="font-black text-emerald-400 uppercase tracking-widest text-lg leading-none">Estrategia del Tutor</h4></div>
+                    <p className="text-slate-300 text-xl font-medium italic leading-relaxed">"{String(currentQuestion.aiTip)}"</p>
                   </div>
                 </div>
               )}
 
               <div className="flex justify-end pt-8">
                 {!isEvaluated ? (
-                  <button onClick={handleVerify} disabled={!selectedOption} className={`w-full lg:w-auto px-16 py-6 rounded-[2rem] font-black text-2xl shadow-2xl transition-all ${selectedOption ? 'bg-emerald-500 text-white hover:bg-emerald-600 scale-105' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Verificar Respuesta</button>
+                  <button onClick={handleVerify} disabled={!selectedOption} className={`w-full lg:w-auto px-16 py-6 rounded-[2rem] font-black text-2xl shadow-2xl transition-all shadow-emerald-500/10 ${selectedOption ? 'bg-emerald-500 text-white hover:bg-emerald-600 scale-105' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Verificar Respuesta</button>
                 ) : (
-                  <button onClick={fetchNewQuestion} className="w-full lg:w-auto bg-[#0f172a] text-white px-16 py-6 rounded-[2rem] font-black text-2xl hover:scale-105 transition-all shadow-2xl flex items-center justify-center gap-4"><RefreshCw size={28} /> Siguiente Reactivo</button>
+                  <button onClick={fetchNewQuestion} className="w-full lg:w-auto bg-[#0f172a] text-white px-16 py-6 rounded-[2rem] font-black text-2xl hover:scale-105 transition-all shadow-2xl flex items-center justify-center gap-4 shadow-slate-900/40"><RefreshCw size={28} /> Siguiente Reactivo</button>
                 )}
               </div>
             </div>
